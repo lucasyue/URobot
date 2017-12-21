@@ -1,7 +1,7 @@
-# Fork from Smart QQ Java
+# LKRobot
 
 欢迎语。
 自动提示改名。
 简单互动。
 
-Smart QQ Java (https://github.com/b3log/xiaov)
+Fork from Smart QQ Java (https://github.com/b3log/xiaov)
