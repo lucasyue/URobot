@@ -2,4 +2,7 @@ target
 *.iml
 *.png
 .idea/
+/logback.log
+/remind.log
+/trace.log
 /urobot.log

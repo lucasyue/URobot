@@ -1,6 +1,6 @@
 package com.scienjus.smartqq;
 
-import com.scienjus.smartqq.Application;
+import com.Application;
 
 public class TestApplication {
     public static void run() {

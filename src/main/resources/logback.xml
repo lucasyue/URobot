@@ -1,0 +1,41 @@
+<configuration>
+
+  <appender name="std" class="ch.qos.logback.core.FileAppender">
+    <file>logback.log</file>
+    <encoder>
+      <pattern>%date %level [%thread] %logger{10} [%file : %line] %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="traceFile" class="ch.qos.logback.core.FileAppender">
+    <file>trace.log</file>
+    <encoder>
+      <pattern>%date %level [%thread] %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="remindFile" class="ch.qos.logback.core.FileAppender">
+    <file>remind.log</file>
+    <encoder>
+      <pattern>%date %level [%thread] %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="stdOut" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="error">
+    <appender-ref ref="std" />
+  </root>
+  
+  <logger name="traceLogger" class="com.log.TraceLogger" level="TRACE" additivity="false">
+    <appender-ref ref="traceFile" />
+  </logger>
+
+  <logger name="remindLogger" class="com.log.RemindLogger" level="TRACE" additivity="false">
+    <appender-ref ref="remindFile" />
+  </logger>
+</configuration>
