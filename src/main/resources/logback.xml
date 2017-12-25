@@ -20,7 +20,14 @@
       <pattern>%date %level [%thread] %msg%n</pattern>
     </encoder>
   </appender>
-
+  
+  <appender name="talkFile" class="ch.qos.logback.core.FileAppender">
+    <file>talk.log</file>
+    <encoder>
+      <pattern>%date %level [%thread] %msg%n</pattern>
+    </encoder>
+  </appender>
+  
   <appender name="stdOut" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>%msg%n</pattern>
@@ -37,5 +44,8 @@
 
   <logger name="remindLogger" class="com.log.RemindLogger" level="TRACE" additivity="false">
     <appender-ref ref="remindFile" />
+  </logger>
+    <logger name="talkLogger" class="com.log.TalkLogger" level="TRACE" additivity="false">
+    <appender-ref ref="talkFile" />
   </logger>
 </configuration>

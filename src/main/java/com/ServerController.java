@@ -9,8 +9,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RestController
 @RequestMapping("/urobot/service")
 public class ServerController {
-	private static final Log logger = LogFactory.getLog(ServerController.class);
+//	private static final Log logger = LogFactory.getLog(ServerController.class);
 
 	@SuppressWarnings("unchecked")
 	@RequestMapping(path = "/multiaction", method = RequestMethod.POST)
@@ -45,7 +43,6 @@ public class ServerController {
 	@RequestMapping(path = "/lgp", method = RequestMethod.GET)
 	@ResponseBody()
 	public Object loginPic(@RequestParam(required = true) String no, HttpServletResponse res) {
-		logger.error(no);
 		Map<String, String> rs = new HashMap<String, String>();
 		File qrcode = new File("qrcode.png");
 		System.out.println(qrcode.getAbsolutePath());
