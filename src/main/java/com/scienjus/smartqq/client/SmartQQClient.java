@@ -1,26 +1,46 @@
 package com.scienjus.smartqq.client;
 
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.apache.log4j.Logger;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.scienjus.smartqq.callback.MessageCallback;
 import com.scienjus.smartqq.constant.ApiURL;
-import com.scienjus.smartqq.model.*;
+import com.scienjus.smartqq.model.Category;
+import com.scienjus.smartqq.model.Discuss;
+import com.scienjus.smartqq.model.DiscussInfo;
+import com.scienjus.smartqq.model.DiscussMessage;
+import com.scienjus.smartqq.model.DiscussUser;
+import com.scienjus.smartqq.model.Font;
+import com.scienjus.smartqq.model.Friend;
+import com.scienjus.smartqq.model.FriendStatus;
+import com.scienjus.smartqq.model.Group;
+import com.scienjus.smartqq.model.GroupInfo;
+import com.scienjus.smartqq.model.GroupMessage;
+import com.scienjus.smartqq.model.GroupUser;
+import com.scienjus.smartqq.model.Message;
+import com.scienjus.smartqq.model.Recent;
+import com.scienjus.smartqq.model.UserInfo;
+
 import net.dongliu.requests.Client;
 import net.dongliu.requests.HeadOnlyRequestBuilder;
 import net.dongliu.requests.Response;
 import net.dongliu.requests.Session;
 import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.struct.Cookie;
-import org.apache.log4j.Logger;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.util.*;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * Api客户端.
@@ -30,6 +50,7 @@ import java.nio.charset.StandardCharsets;
  * @date 2015/12/18.
  */
 public class SmartQQClient implements Closeable {
+	public static boolean LOGIN_FLAG = false;
 
     //日志
     private static final Logger LOGGER = Logger.getLogger(SmartQQClient.class);
@@ -100,6 +121,7 @@ public class SmartQQClient implements Closeable {
     private void login() {
         getQRCode();
         String url = verifyQRCode();
+        SmartQQClient.LOGIN_FLAG = true;
         getPtwebqq(url);
         getVfwebqq();
         getUinAndPsessionid();
@@ -113,7 +135,6 @@ public class SmartQQClient implements Closeable {
     @SuppressWarnings("rawtypes")
 	private Response getQRCode() {
         LOGGER.debug("开始获取二维码");
-
         //本地存储二维码图片
         String filePath;
         try {
@@ -145,7 +166,6 @@ public class SmartQQClient implements Closeable {
     //登录流程2：校验二维码
     private String verifyQRCode() {
         LOGGER.debug("等待扫描二维码");
-
         //阻塞直到确认二维码认证成功
         while (true) {
             sleep(1);
@@ -155,7 +175,6 @@ public class SmartQQClient implements Closeable {
                 for (String content : result.split("','")) {
                     if (content.startsWith("http")) {
                         LOGGER.info("正在登录，请稍后");
-
                         return content;
                     }
                 }
@@ -170,7 +189,6 @@ public class SmartQQClient implements Closeable {
     //登录流程3：获取ptwebqq
     private void getPtwebqq(String url) {
         LOGGER.debug("开始获取ptwebqq");
-
         Response<String> response = get(ApiURL.GET_PTWEBQQ, url);
         this.ptwebqq = response.getCookies().get("ptwebqq").iterator().next().getValue();
     }
@@ -211,11 +229,9 @@ public class SmartQQClient implements Closeable {
      */
     public List<Group> getGroupList() {
         LOGGER.debug("开始获取群列表");
-
         JSONObject r = new JSONObject();
         r.put("vfwebqq", vfwebqq);
         r.put("hash", hash());
-
         Response<String> response = post(ApiURL.GET_GROUP_LIST, r);
         int retryTimes4getGroupList = retryTimesOnFailed;
         while (response.getStatusCode() == 404 && retryTimes4getGroupList > 0) {
