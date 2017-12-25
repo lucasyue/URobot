@@ -14,7 +14,6 @@ import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.struct.Cookie;
 import org.apache.log4j.Logger;
 
-import java.awt.Desktop;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -111,7 +110,8 @@ public class SmartQQClient implements Closeable {
     }
 
     //登录流程1：获取二维码
-    private void getQRCode() {
+    @SuppressWarnings("rawtypes")
+	private Response getQRCode() {
         LOGGER.debug("开始获取二维码");
 
         //本地存储二维码图片
@@ -131,6 +131,7 @@ public class SmartQQClient implements Closeable {
             }
         }
         LOGGER.info("二维码已保存在 " + filePath + " 文件中，请打开手机QQ并扫描二维码");
+        return response;
     }
 
     //用于生成ptqrtoken的哈希函数
