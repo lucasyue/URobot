@@ -77,7 +77,10 @@ public class Application {
 						boolean send = checkAndSendWelcome(msg);
 						if (!send) {
 							refreshWatchedGroupUsers();
-							checkAndRemindRename(msg);
+							send = checkAndRemindRename(msg);
+						}
+						if(!send){
+							talk(msg);
 						}
 						msg = null;
 					}
@@ -170,6 +173,7 @@ public class Application {
 		return false;
 	}
 
+	static Map<String,Integer> talkMap = new HashMap<String,Integer>();
 	public static void talk(GroupMessage msg){
 		GroupUser gUser = watchGroupUsers.get(msg.getUserId());
 		long uin = gUser.getUin();
@@ -177,7 +181,14 @@ public class Application {
 		String nick = gUser.getNick();
 		String card = gUser.getCard();
 		if(content.startsWith("@上海-锐道-小U")){
-			String talk = "@"+card+"，你好，欢迎你！";
+			String talk = "@"+card+"，你好呀，你可以撩我，我现在还不能撩你哦，但我会记住你的，瓦哈哈！";
+			if(talkMap.containsKey(nick)){
+			    talk = "@"+card+"，你已经回复你了，不要撩了，好好上班干活吧，否则老板会神气的哦。";
+			    int count = talkMap.get(nick);
+                talkMap.put(nick, count);
+			} else {
+				talkMap.put(nick, 1);
+			}
 			client.sendMessageToGroup(msg.getGroupId(), talk);
 			TalkLogger.traceMessage(talk);
 		}
