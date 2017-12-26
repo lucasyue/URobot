@@ -1,6 +1,7 @@
 package com;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +16,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import com.log.RemindLogger;
 import com.log.TalkLogger;
@@ -29,7 +29,6 @@ import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.GroupUser;
 import com.scienjus.smartqq.model.Message;
 
-@Component
 public class Application {
 	static Logger logger = LoggerFactory.getLogger(Application.class);
 	static SmartQQClient client;
@@ -45,10 +44,20 @@ public class Application {
 	public static void main(String[] args) {
 		ClassPathResource yF = new ClassPathResource("application.properties");
 		Properties p = new Properties();
+		InputStream is = null;
 		try {
-			p.load(yF.getInputStream());
+			is = yF.getInputStream();
+			p.load(is);
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally{
+			if(is != null){
+				try {
+					is.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 		watchedGroupName = p.getProperty("lk.groupName");
 		cardRule = p.getProperty("lk.cardRule");
