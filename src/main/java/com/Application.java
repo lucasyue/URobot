@@ -1,16 +1,21 @@
 package com;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
 import com.log.RemindLogger;
 import com.log.TalkLogger;
@@ -24,21 +29,35 @@ import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.GroupUser;
 import com.scienjus.smartqq.model.Message;
 
+@Component
 public class Application {
 	static Logger logger = LoggerFactory.getLogger(Application.class);
 	static SmartQQClient client;
 	static Map<Long, Date> remindTimer = new HashMap<Long, Date>();
-	static String watchedGroupName = "规则报表工作流交流群";//"计算机职业技术认证";//
+	static String watchedGroupName;
+	static String cardRule = null;
+	static String myNick = null;
 	static Group watchedGroup = null;
 	static Map<Long, GroupUser> watchGroupUsers = new HashMap<Long, GroupUser>();
-	static String rule1 = "所在地-中文公司名-呢称如[上海-锐道-小U]";
-	static int timeSpanRemind = 20 * 1000;
-    static Set<String> ignoreUsers = new HashSet<String>(); 
+	static int timeSpanRemind = 60 * 1000;
+	static Set<String> ignoreUsers = new HashSet<String>();
+
 	public static void main(String[] args) {
-//		ignoreUsers.add("开创未来");
-		//ignoreUsers.add("QQ小冰");
+		ClassPathResource yF = new ClassPathResource("application.properties");
+		Properties p = new Properties();
+		try {
+			p.load(yF.getInputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		watchedGroupName = p.getProperty("lk.groupName");
+		cardRule = p.getProperty("lk.cardRule");
+		myNick = p.getProperty("lk.myNick");
+		System.out.println(cardRule);
+		// ignoreUsers.add("开创未来");
+		// ignoreUsers.add("QQ小冰");
 		ignoreUsers.add("Jacky");
-		//watchedGroupName = "实力天团@天生闪耀";
+		// watchedGroupName = "实力天团@天生闪耀";
 		// 创建一个新对象时需要扫描二维码登录，并且传一个处理接收到消息的回调，如果你不需要接收消息，可以传null
 		final Queue<GroupMessage> msgQueue = new ConcurrentLinkedQueue<GroupMessage>();
 		client = new SmartQQClient(new MessageCallback() {
@@ -48,7 +67,7 @@ public class Application {
 
 			@Override
 			public void onGroupMessage(GroupMessage message) {
-				if(watchedGroup == null){
+				if (watchedGroup == null) {
 					return;
 				}
 				long gId = message.getGroupId();
@@ -79,7 +98,7 @@ public class Application {
 							refreshWatchedGroupUsers();
 							send = checkAndRemindRename(msg);
 						}
-						if(!send){
+						if (!send) {
 							talk(msg);
 						}
 						msg = null;
@@ -98,7 +117,7 @@ public class Application {
 	}
 
 	private static void refreshWatchedGroupUsers() {
-		if(watchedGroup == null){
+		if (watchedGroup == null) {
 			List<Group> gList = null;
 			try {
 				gList = client.getGroupList();
@@ -127,8 +146,9 @@ public class Application {
 		String content = msg.getContent();
 		if (content != null && content.contains("大家好，我是")) {
 			String name = content.substring(content.indexOf("大家好，我是") + 6, content.indexOf("。"));
-			String welcomeMsg = "@" + name + "欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不回答你问题的，快改名吧格式：" + rule1 + "！";
-			System.out.println(">>>>>>>>>"+welcomeMsg);
+			String welcomeMsg = "@" + name + "欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不回答你问题的，快改名吧格式："
+					+ cardRule + "！";
+			System.out.println(">>>>>>>>>" + welcomeMsg);
 			RemindLogger.traceMessage(welcomeMsg);
 			client.sendMessageToGroup(msg.getGroupId(), welcomeMsg);
 			return true;
@@ -145,14 +165,14 @@ public class Application {
 		String content = msg.getContent();
 		String nick = gUser.getNick();
 		String card = gUser.getCard();
-		if(ignoreUsers.contains(nick)){
+		if (ignoreUsers.contains(nick)) {
 			return false;
 		}
-		System.out.println(card+"," +nick + ">" + content + "," + msg.getUserId() + ","+ uin);
+		System.out.println(card + "," + nick + ">" + content + "," + msg.getUserId() + "," + uin);
 		boolean right = false;
 		if (card != null) {
 			String array[] = card.split("-");
-			if (array.length >= 3) {
+			if (array.length >= 3 || (array.length == 2 && card.endsWith("-"))) {
 				right = true;
 			}
 		}
@@ -163,9 +183,8 @@ public class Application {
 			}
 		}
 		if (!right) {
-			String remindMsg = "@"+(card == null? nick : card) + "：小U发现您的群名片不合规，请修改一下吧，格式为：" + rule1 + "！";
+			String remindMsg = "@" + (card == null ? nick : card) + "：小U发现您的群名片不合规，请修改一下吧，格式为：" + cardRule + "！";
 			client.sendMessageToGroup(msg.getGroupId(), remindMsg);
-			System.out.println(">>>>>>>>>>>"+remindMsg);
 			RemindLogger.traceMessage(remindMsg);
 			remindTimer.put(gUser.getUin(), new Date());
 			return true;
@@ -173,28 +192,34 @@ public class Application {
 		return false;
 	}
 
-	static Map<String,Integer> talkMap = new HashMap<String,Integer>();
-	public static void talk(GroupMessage msg){
+	static Map<String, Integer> talkMap = new ConcurrentHashMap<String, Integer>();
+
+	public static void talk(GroupMessage msg) {
 		GroupUser gUser = watchGroupUsers.get(msg.getUserId());
 		long uin = gUser.getUin();
 		String content = msg.getContent();
 		String nick = gUser.getNick();
 		String card = gUser.getCard();
-		if(content.startsWith("@上海-锐道-小U")){
-			String talk = "@"+card+"，你好呀，你可以撩我，我现在还不能撩你哦，但我会记住你的，瓦哈哈！";
-			if(talkMap.containsKey(nick)){
-			    talk = "@"+card+"，你已经回复你了，不要撩了，好好上班干活吧，否则老板会神气的哦。";
-			    int count = talkMap.get(nick);
-                talkMap.put(nick, count);
+		if (content.startsWith("@"+myNick)) {
+			String talk = "@" + card + "，你好呀，你可以撩我，但我不能撩你哦，不过我会记住你的，我有空回撩你，瓦哈哈！";
+			Integer count = talkMap.get(nick);
+			if (count != null) {
+				if (count == 1) {
+					talk = "@" + card + "，已经回复你了，不要撩了，好好上班干活吧，否则老板会神气的哦。";
+				}
+				count++;
 			} else {
-				talkMap.put(nick, 1);
+				count = 1;
 			}
-			client.sendMessageToGroup(msg.getGroupId(), talk);
+			talkMap.put(nick, count);
+			if(count < 3){
+				client.sendMessageToGroup(msg.getGroupId(), talk);
+			}
 			TalkLogger.traceMessage(talk);
 		}
-		System.out.println(card+"," +nick + ">" + content + "," + msg.getUserId() + ","+ uin);
+		System.out.println(card + "," + nick + ">" + content + "," + msg.getUserId() + "," + uin);
 	}
-	
+
 	public static boolean ifNeedRemindTimer(Long uin) {
 		remindTimer.get(uin);
 		if (!remindTimer.containsKey(uin)) {

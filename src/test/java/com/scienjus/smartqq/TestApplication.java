@@ -1,10 +1,10 @@
 package com.scienjus.smartqq;
 
-import com.Application;
-
 public class TestApplication {
-    public static void run() {
-        String[] args = {};
-        Application.main(args);
+    public static void main(String[] args) {
+        args = new String[]{};
+        String s = "长沙-优势智通-阿帅";
+        args = s.split("-");
+        System.out.println(args.length);
     }
 }
