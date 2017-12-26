@@ -38,8 +38,29 @@
 			<artifactId>requests</artifactId>
 			<version>2.1.5</version>
 		</dependency>
+		<dependency>
+			<groupId>com.bstek.urule</groupId>
+			<artifactId>urule-console</artifactId>
+			<version>2.1.4-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.poi</groupId>
+					<artifactId>poi-ooxml</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>3.16</version>
+		</dependency>
 	</dependencies>
-
+	<repositories>
+		<repository>
+			<id>dev</id>
+			<url>https://oss.sonatype.org/content/groups/public/</url>
+		</repository>
+	</repositories>
 	<build>
 		<finalName>${project.artifactId}-${project.version}</finalName>
 		<plugins>
