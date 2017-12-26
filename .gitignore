@@ -6,3 +6,7 @@ target
 /remind.log
 /trace.log
 /urobot.log
+<<<<<<< HEAD
+=======
+/talk.log
+>>>>>>> branch 'master' of https://github.com/lucasyue/URobot.git

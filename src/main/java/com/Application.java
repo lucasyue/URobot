@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.log.RemindLogger;
+import com.log.TalkLogger;
 import com.log.TraceLogger;
 import com.scienjus.smartqq.callback.MessageCallback;
 import com.scienjus.smartqq.client.SmartQQClient;
@@ -126,23 +127,23 @@ public class Application {
 			String welcomeMsg = "@" + name + "欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不回答你问题的，快改名吧格式：" + rule1 + "！";
 			System.out.println(">>>>>>>>>"+welcomeMsg);
 			RemindLogger.traceMessage(welcomeMsg);
-			//client.sendMessageToGroup(msg.getGroupId(), welcomeMsg);
+			client.sendMessageToGroup(msg.getGroupId(), welcomeMsg);
 			return true;
 		}
 		return false;
 	}
 
-	public static void checkAndRemindRename(GroupMessage msg) {
+	public static boolean checkAndRemindRename(GroupMessage msg) {
 		GroupUser gUser = watchGroupUsers.get(msg.getUserId());
 		long uin = gUser.getUin();
 		if (!ifNeedRemindTimer(uin)) {
-			return;
+			return false;
 		}
 		String content = msg.getContent();
 		String nick = gUser.getNick();
 		String card = gUser.getCard();
 		if(ignoreUsers.contains(nick)){
-			return;
+			return false;
 		}
 		System.out.println(card+"," +nick + ">" + content + "," + msg.getUserId() + ","+ uin);
 		boolean right = false;
@@ -160,13 +161,29 @@ public class Application {
 		}
 		if (!right) {
 			String remindMsg = "@"+(card == null? nick : card) + "：小U发现您的群名片不合规，请修改一下吧，格式为：" + rule1 + "！";
-			//client.sendMessageToGroup(msg.getGroupId(), remindMsg);
+			client.sendMessageToGroup(msg.getGroupId(), remindMsg);
 			System.out.println(">>>>>>>>>>>"+remindMsg);
 			RemindLogger.traceMessage(remindMsg);
 			remindTimer.put(gUser.getUin(), new Date());
+			return true;
 		}
+		return false;
 	}
 
+	public static void talk(GroupMessage msg){
+		GroupUser gUser = watchGroupUsers.get(msg.getUserId());
+		long uin = gUser.getUin();
+		String content = msg.getContent();
+		String nick = gUser.getNick();
+		String card = gUser.getCard();
+		if(content.startsWith("@上海-锐道-小U")){
+			String talk = "@"+card+"，你好，欢迎你！";
+			client.sendMessageToGroup(msg.getGroupId(), talk);
+			TalkLogger.traceMessage(talk);
+		}
+		System.out.println(card+"," +nick + ">" + content + "," + msg.getUserId() + ","+ uin);
+	}
+	
 	public static boolean ifNeedRemindTimer(Long uin) {
 		remindTimer.get(uin);
 		if (!remindTimer.containsKey(uin)) {
