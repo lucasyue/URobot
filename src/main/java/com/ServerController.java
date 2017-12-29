@@ -16,27 +16,26 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.urule.URuleUtil;
 
 @RestController
 @RequestMapping("/urobot/service")
 public class ServerController {
 //	private static final Log logger = LogFactory.getLog(ServerController.class);
 
-	@SuppressWarnings("unchecked")
-	@RequestMapping(path = "/multiaction", method = RequestMethod.POST)
+	@RequestMapping(path = "/test", method = RequestMethod.GET)
 	@ResponseBody()
-	public Object multiAction(@RequestParam(required = true) Map<String, Object> params) {
-		Map<String, String> rs = new HashMap<String, String>();
-		String xxx = (String) params.get("xxx");
-		if (xxx != null) {
-			ObjectMapper mapper = new ObjectMapper();
-			try {
-				params = mapper.readValue(xxx, Map.class);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+	public Object multiAction(@RequestParam(required = true) String no) {
+		Map<String, Object> rs = new HashMap<String, Object>();
+		Map<String,Object> params = new HashMap<String,Object>();
+		params.put("content", no);
+		Map<String, Object>rs2 = URuleUtil.getAnswer(params);
+		//"我不想说话，请不要打扰我！";;
+		for(String key : rs2.keySet()){
+			System.out.println(rs2.get(key));
 		}
+		System.out.println("回话："+rs2.get("back"));
+		rs.putAll(rs2);
 		return rs;
 	}
 

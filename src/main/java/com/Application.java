@@ -28,6 +28,7 @@ import com.scienjus.smartqq.model.GroupInfo;
 import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.GroupUser;
 import com.scienjus.smartqq.model.Message;
+import com.urule.URuleUtil;
 
 public class Application {
 	static Logger logger = LoggerFactory.getLogger(Application.class);
@@ -155,7 +156,7 @@ public class Application {
 		String content = msg.getContent();
 		if (content != null && content.contains("大家好，我是")) {
 			String name = content.substring(content.indexOf("大家好，我是") + 6, content.indexOf("。"));
-			String welcomeMsg = "@" + name + "欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不回答你问题的，快改名吧格式："
+			String welcomeMsg = "@" + name + "欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不理你的，快改名吧格式："
 					+ cardRule + "！";
 			System.out.println(">>>>>>>>>" + welcomeMsg);
 			RemindLogger.traceMessage(welcomeMsg);
@@ -209,21 +210,26 @@ public class Application {
 		String content = msg.getContent();
 		String nick = gUser.getNick();
 		String card = gUser.getCard();
-		if (content.startsWith("@"+myNick)) {
-			String talk = "@" + card + "，你好呀，你可以撩我，但我不能撩你哦，不过我会记住你的，我有空回撩你，瓦哈哈！";
+		if (content.contains("@"+myNick)) {
+			Map<String,Object> params = new HashMap<String, Object>();
 			Integer count = talkMap.get(nick);
 			if (count != null) {
-				if (count == 1) {
-					talk = "@" + card + "，已经回复你了，不要撩了，好好上班干活吧，否则老板会神气的哦。";
-				}
-				count++;
-			} else {
-				count = 1;
+			    count = 0;
 			}
+			params.put("content", content);
+			params.put("count", count);
+			Map<String,Object> rs = URuleUtil.getAnswer(params);
+			String back = (String) rs.get("back");
+			String talk = "@" + card + "，";
+			if(back == null){
+				back = "我现在不想说话，请不要打扰我！";
+			}
+			if (count == 1) {
+				talk = "@" + card + "，已经回复你了，";
+			}
+			count++;
 			talkMap.put(nick, count);
-			if(count < 3){
-				client.sendMessageToGroup(msg.getGroupId(), talk);
-			}
+			client.sendMessageToGroup(msg.getGroupId(), talk);
 			TalkLogger.traceMessage(talk);
 		}
 		System.out.println(card + "," + nick + ">" + content + "," + msg.getUserId() + "," + uin);
