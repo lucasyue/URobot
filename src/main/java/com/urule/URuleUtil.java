@@ -25,4 +25,7 @@ public class URuleUtil {
 		}
 		return new HashMap<>();
 	}
+	public static Map<String,Object> jsonToMap(){
+		return null;
+	}
 }

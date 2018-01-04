@@ -2,6 +2,7 @@ package com;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,9 +38,11 @@ public class Application {
 	static String watchedGroupName;
 	static String cardRule = null;
 	static String myNick = null;
+	static String welcomeMsg = null;
+	static String remindMsg = null;
 	static Group watchedGroup = null;
 	static Map<Long, GroupUser> watchGroupUsers = new HashMap<Long, GroupUser>();
-	static int timeSpanRemind = 60 * 1000;
+	static int timeSpanRemind = 60 * 1000;//提醒改名的时间间隔
 	static Set<String> ignoreUsers = new HashSet<String>();
 
 	public static void main(String[] args) {
@@ -63,6 +66,13 @@ public class Application {
 		watchedGroupName = p.getProperty("lk.groupName");
 		cardRule = p.getProperty("lk.cardRule");
 		myNick = p.getProperty("lk.myNick");
+		welcomeMsg = p.getProperty("lk.welcomeMsg");
+		remindMsg = p.getProperty("lk.remindMsg");
+		String ingoreNickList = p.getProperty("lk.ingoreNickList");
+		if (ingoreNickList != null) {
+			String[] nList = ingoreNickList.split(",");
+			ignoreUsers.addAll(Arrays.asList(nList));
+		}
 		System.out.println(cardRule);
 		// ignoreUsers.add("开创未来");
 		// ignoreUsers.add("QQ小冰");
@@ -156,11 +166,10 @@ public class Application {
 		String content = msg.getContent();
 		if (content != null && content.contains("大家好，我是")) {
 			String name = content.substring(content.indexOf("大家好，我是") + 6, content.indexOf("。"));
-			String welcomeMsg = "@" + name + "欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不理你的，快改名吧格式："
-					+ cardRule + "！";
-			System.out.println(">>>>>>>>>" + welcomeMsg);
-			RemindLogger.traceMessage(welcomeMsg);
-			client.sendMessageToGroup(msg.getGroupId(), welcomeMsg);
+			String welcomeMsg1 = "@" + name + welcomeMsg;
+			System.out.println(">>>>>>>>>" + welcomeMsg1);
+			RemindLogger.traceMessage(welcomeMsg1);
+			client.sendMessageToGroup(msg.getGroupId(), welcomeMsg1);
 			return true;
 		}
 		return false;
@@ -193,9 +202,9 @@ public class Application {
 			}
 		}
 		if (!right) {
-			String remindMsg = "@" + (card == null ? nick : card) + "：小U发现您的群名片不合规，请修改一下吧，格式为：" + cardRule + "！";
-			client.sendMessageToGroup(msg.getGroupId(), remindMsg);
-			RemindLogger.traceMessage(remindMsg);
+			String remindMsg1 = "@" + (card == null ? nick : card) + "："+remindMsg;
+			client.sendMessageToGroup(msg.getGroupId(), remindMsg1);
+			RemindLogger.traceMessage(remindMsg1);
 			remindTimer.put(gUser.getUin(), new Date());
 			return true;
 		}
@@ -212,6 +221,7 @@ public class Application {
 		String card = gUser.getCard();
 		if (content.contains("@"+myNick)) {
 			Map<String,Object> params = new HashMap<String, Object>();
+			
 			Integer count = talkMap.get(nick);
 			if (count != null) {
 			    count = 0;
