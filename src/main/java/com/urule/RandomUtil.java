@@ -56,7 +56,7 @@ public class RandomUtil {
 
 	public static void main(String[] args) throws IOException {
 		Map<String, String> map = new HashMap<String, String>();
-		String path = RandomUtil.class.getResource("/jokes.json1.txt").getPath();
+		String path = RandomUtil.class.getResource("/jokes.json.txt").getPath();
 		FileInputStream fis = new FileInputStream(path);
 		InputStreamReader isr = new InputStreamReader(fis, "utf8");
 		BufferedReader br = new BufferedReader(isr);

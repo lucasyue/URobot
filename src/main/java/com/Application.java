@@ -113,13 +113,17 @@ public class Application {
 				while (true) {
 					GroupMessage msg = msgQueue.poll();
 					if (msg != null) {
-						boolean send = checkAndSendWelcome(msg);
-						if (!send) {
-							refreshWatchedGroupUsers();
-							send = checkAndRemindRename(msg);
-						}
-						if (!send) {
-							talk(msg);
+						try {
+							boolean send = checkAndSendWelcome(msg);
+							if (!send) {
+								refreshWatchedGroupUsers();
+								send = checkAndRemindRename(msg);
+							}
+							if (!send) {
+								talk(msg);
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
 						}
 						msg = null;
 					}
@@ -219,26 +223,33 @@ public class Application {
 		String content = msg.getContent();
 		String nick = gUser.getNick();
 		String card = gUser.getCard();
+		GroupUser gToUser = watchGroupUsers.get(msg.getToUserId());
+
+		String cardTo = gToUser.getCard();
+		String nickTo = gToUser.getNick();
+
 		if (content.contains("@"+myNick)) {
 			Map<String,Object> params = new HashMap<String, Object>();
 			
 			Integer count = talkMap.get(nick);
-			if (count != null) {
+			if (count == null) {
 			    count = 0;
 			}
 			params.put("content", content);
 			params.put("count", count);
 			Map<String,Object> rs = URuleUtil.getAnswer(params);
 			String back = (String) rs.get("back");
-			String talk = "@" + card + "，";
+			String talkBack = card == null ? nick : card;
+			String talk = "@" + talkBack + "，";
 			if(back == null){
 				back = "我现在不想说话，请不要打扰我！";
 			}
 			if (count == 1) {
-				talk = "@" + card + "，已经回复你了，";
+				talk = "@" + talkBack + "，已经回复你了，";
 			}
+			talk += back;
 			count++;
-			talkMap.put(nick, count);
+			talkMap.put(talkBack, count);
 			client.sendMessageToGroup(msg.getGroupId(), talk);
 			TalkLogger.traceMessage(talk);
 		}

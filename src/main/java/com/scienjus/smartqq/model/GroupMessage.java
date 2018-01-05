@@ -19,6 +19,7 @@ public class GroupMessage {
     private String content;
 
     private long userId;
+    private long toUserId;
 
     private Font font;
 
@@ -35,6 +36,7 @@ public class GroupMessage {
 
         this.time = json.getLongValue("time");
         this.groupId = json.getLongValue("group_code");
+        this.toUserId = json.getLongValue("to_uin");
         this.userId = json.getLongValue("send_uin");
     }
 
@@ -62,7 +64,15 @@ public class GroupMessage {
         this.content = content;
     }
 
-    public long getUserId() {
+    public long getToUserId() {
+		return toUserId;
+	}
+
+	public void setToUserId(long toUserId) {
+		this.toUserId = toUserId;
+	}
+
+	public long getUserId() {
         return userId;
     }
 

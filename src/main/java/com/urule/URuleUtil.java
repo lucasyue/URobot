@@ -15,7 +15,7 @@ public class URuleUtil {
 		KnowledgeService service = (KnowledgeService) Utils.getApplicationContext().getBean(KnowledgeService.BEAN_ID);
 		KnowledgePackage knPackage;
 		try {
-			knPackage = service.getKnowledge("utalk/test");
+			knPackage = service.getKnowledge("utalk/p1");
 			KnowledgeSession session = KnowledgeSessionFactory.newKnowledgeSession(knPackage);
 			session.insert(params);
 			session.fireRules();
