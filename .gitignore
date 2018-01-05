@@ -1,4 +1,9 @@
 target
+bin
+.settings/*
+.classpath
+.project
+.projections.json
 /logback.log
 /remind.log
 /trace.log
