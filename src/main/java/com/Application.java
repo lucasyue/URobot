@@ -223,10 +223,6 @@ public class Application {
 		String content = msg.getContent();
 		String nick = gUser.getNick();
 		String card = gUser.getCard();
-		GroupUser gToUser = watchGroupUsers.get(msg.getToUserId());
-
-		String cardTo = gToUser.getCard();
-		String nickTo = gToUser.getNick();
 
 		if (content.contains("@"+myNick)) {
 			Map<String,Object> params = new HashMap<String, Object>();
