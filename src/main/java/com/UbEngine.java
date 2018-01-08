@@ -1,14 +1,10 @@
 package com;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +12,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.log.RemindLogger;
 import com.log.TalkLogger;
@@ -30,53 +27,37 @@ import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.GroupUser;
 import com.scienjus.smartqq.model.Message;
 import com.urule.URuleUtil;
+@Component
+public class UbEngine {
+	private Logger logger = LoggerFactory.getLogger(UbEngine.class);
+	private SmartQQClient client;
+	private Map<Long, Date> remindTimer = new HashMap<Long, Date>();
+	@Value("${lk.groupName}")
+	private String watchedGroupName;
+	@Value("${lk.cardRule}")
+	private String cardRule = null;
+	@Value("${lk.myNick}")
+	private String myNick = null;
+	@Value("${lk.welcomeMsg}")
+	private String welcomeMsg = null;
+	@Value("${lk.remindMsg}")
+	private String remindMsg = null;
+	@Value("${lk.ingoreNickList}")
+	private String ingoreNickList = null;
+	private Set<String> ignoreUsers = new HashSet<String>();
+	private Group watchedGroup = null;
+	private int timeSpanRemind = 60 * 1000;//提醒改名的时间间隔
+	private Map<Long, GroupUser> watchGroupUsers = new HashMap<Long, GroupUser>();
+	static Map<String, Integer> talkMap = new ConcurrentHashMap<String, Integer>();
 
-public class Application {
-	static Logger logger = LoggerFactory.getLogger(Application.class);
-	static SmartQQClient client;
-	static Map<Long, Date> remindTimer = new HashMap<Long, Date>();
-	static String watchedGroupName;
-	static String cardRule = null;
-	static String myNick = null;
-	static String welcomeMsg = null;
-	static String remindMsg = null;
-	static Group watchedGroup = null;
-	static Map<Long, GroupUser> watchGroupUsers = new HashMap<Long, GroupUser>();
-	static int timeSpanRemind = 60 * 1000;//提醒改名的时间间隔
-	static Set<String> ignoreUsers = new HashSet<String>();
-
-	public static void main(String[] args) {
-		ClassPathResource yF = new ClassPathResource("application.properties");
-		Properties p = new Properties();
-		InputStream is = null;
-		try {
-			is = yF.getInputStream();
-			p.load(is);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally{
-			if(is != null){
-				try {
-					is.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+	public void start(String[] args) {
+		System.out.println(cardRule);
+		if(ingoreNickList != null){
+			String[] list = ingoreNickList.split(",");
+			for(String n : list){
+				ignoreUsers.add(n);
 			}
 		}
-		watchedGroupName = p.getProperty("lk.groupName");
-		cardRule = p.getProperty("lk.cardRule");
-		myNick = p.getProperty("lk.myNick");
-		welcomeMsg = p.getProperty("lk.welcomeMsg");
-		remindMsg = p.getProperty("lk.remindMsg");
-		String ingoreNickList = p.getProperty("lk.ingoreNickList");
-		if (ingoreNickList != null) {
-			String[] nList = ingoreNickList.split(",");
-			ignoreUsers.addAll(Arrays.asList(nList));
-		}
-		System.out.println(cardRule);
-		// ignoreUsers.add("开创未来");
-		// ignoreUsers.add("QQ小冰");
-		ignoreUsers.add("Jacky");
 		// watchedGroupName = "实力天团@天生闪耀";
 		// 创建一个新对象时需要扫描二维码登录，并且传一个处理接收到消息的回调，如果你不需要接收消息，可以传null
 		final Queue<GroupMessage> msgQueue = new ConcurrentLinkedQueue<GroupMessage>();
@@ -140,7 +121,7 @@ public class Application {
 		// }
 	}
 
-	private static void refreshWatchedGroupUsers() {
+	private void refreshWatchedGroupUsers() {
 		if (watchedGroup == null) {
 			List<Group> gList = null;
 			try {
@@ -166,12 +147,13 @@ public class Application {
 		}
 	}
 
-	public static boolean checkAndSendWelcome(GroupMessage msg) {
+	public boolean checkAndSendWelcome(GroupMessage msg) {
 		String content = msg.getContent();
 		if (content != null && content.contains("大家好，我是")) {
 			String name = content.substring(content.indexOf("大家好，我是") + 6, content.indexOf("。"));
 			String welcomeMsg1 = "@" + name + welcomeMsg;
 			System.out.println(">>>>>>>>>" + welcomeMsg1);
+			logger.info(welcomeMsg1);
 			RemindLogger.traceMessage(welcomeMsg1);
 			client.sendMessageToGroup(msg.getGroupId(), welcomeMsg1);
 			return true;
@@ -179,7 +161,7 @@ public class Application {
 		return false;
 	}
 
-	public static boolean checkAndRemindRename(GroupMessage msg) {
+	public boolean checkAndRemindRename(GroupMessage msg) {
 		GroupUser gUser = watchGroupUsers.get(msg.getUserId());
 		long uin = gUser.getUin();
 		if (!ifNeedRemindTimer(uin)) {
@@ -215,9 +197,7 @@ public class Application {
 		return false;
 	}
 
-	static Map<String, Integer> talkMap = new ConcurrentHashMap<String, Integer>();
-
-	public static void talk(GroupMessage msg) {
+	public void talk(GroupMessage msg) {
 		GroupUser gUser = watchGroupUsers.get(msg.getUserId());
 		long uin = gUser.getUin();
 		String content = msg.getContent();
@@ -252,7 +232,7 @@ public class Application {
 		System.out.println(card + "," + nick + ">" + content + "," + msg.getUserId() + "," + uin);
 	}
 
-	public static boolean ifNeedRemindTimer(Long uin) {
+	public boolean ifNeedRemindTimer(Long uin) {
 		remindTimer.get(uin);
 		if (!remindTimer.containsKey(uin)) {
 			return true;
