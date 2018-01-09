@@ -51,7 +51,7 @@ public class UbEngine {
 	static Map<String, Integer> talkMap = new ConcurrentHashMap<String, Integer>();
 
 	public void start(String[] args) {
-		System.out.println(cardRule);
+		System.out.println(watchedGroupName+" "+cardRule);
 		if(ingoreNickList != null){
 			String[] list = ingoreNickList.split(",");
 			for(String n : list){

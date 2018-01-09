@@ -1,14 +1,14 @@
 #server:
 #   port: 8080
 #   servlet:
-#    contextPath: /robot
+#    contextPath: /robot 规则报表工作流交流群 计算机职业技术认证
 lk:
-   groupName: 计算机职业技术认证
-   myNick: 上海-小U-外星人-问答
-   ingoreNickList: xx,上海-Lucas-软件-程序员,dev.bar.com,foo.bar.com
-   cardRule: 所在地-称呼-行业-擅长技术[${lk.myNick}]
+   groupName: 规则报表工作流交流群
+   myNick: 上海-锐道信息-小U
+   ingoreNickList: 上海-锐道信息-Jacky,Jacky,上海-锐道信息-高杰
+   cardRule: 所在地-公司名-呢称[${lk.myNick}]
    welcomeMsg: 欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不理你的，快改名吧格式：所在地-称呼-行业-擅长技术[${lk.myNick}]！
-   remindMsg: 小U发现您的群名片不合规，请修改一下吧，格式为：所在地-称呼-行业-擅长技术[${lk.myNick}]！
+   remindMsg: 小U发现您的群名片不合规，请修改一下吧，格式为：所在地-公司名-呢称[${lk.myNick}]！
 urule:
    repository:
      dir : D://urule-res
