@@ -1,3 +1,7 @@
+#server:
+#   port: 8080
+#   servlet:
+#    contextPath: /robot
 lk:
    groupName: 计算机职业技术认证
    myNick: 上海-小U-外星人-问答
