@@ -33,10 +33,15 @@ public class ContainAssertor implements Assertor {
 			String leftStr=left.toString();
 			if(right instanceof Collection){
 				Collection<?> rightList=(Collection<?>)right;
+				boolean rs = false;
 				for(Object rO : rightList){
 					String rightStr=rO.toString();
-					return leftStr.contains(rightStr);
+					rs = leftStr.contains(rightStr);
+					if(rs){
+						break;
+					}
 				}
+				return rs;
 			} else {
 				String rightStr=right.toString();
 				if(rightStr.contains(",")){
