@@ -1,33 +1,43 @@
-#server:
-#   port: 8080
+server:
+   port: 8081
 #   servlet:
-#    contextPath: /robot 规则报表工作流交流群 计算机职业技术认证
+#    contextPath: /robot 规则报表工作流交流群 
 lk:
    groupName: 规则报表工作流交流群
    myNick: 上海-锐道信息-小U
    ingoreNickList: 上海-锐道信息-Jacky,Jacky,上海-锐道信息-高杰
    cardRule: 所在地-公司名-呢称[${lk.myNick}]
-   welcomeMsg: 欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不理你的，快改名吧格式：所在地-称呼-行业-擅长技术[${lk.myNick}]！
+   welcomeMsg: 欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不理你的，快改名格式：所在地-称呼-行业-擅长技术[${lk.myNick}]！
    remindMsg: 小U发现您的群名片不合规，请修改一下吧，格式为：所在地-公司名-呢称[${lk.myNick}]！
 urule:
    repository:
      dir : D://urule-res
 ---
 spring:
-   profiles: test
+   profiles: test1
 lk:
-   groupName: 实力天团@天生闪耀
-   myNick: 上海-小U-外星人-问答
+   groupName: 计算机职业技术认证
+   myNick: 上海-小U-x星球-问答
    ingoreNickList: ${lk.myNick}
    cardRule: 所在地-称呼-行业-擅长技术[${lk.myNick}]
-   welcomeMsg: 欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不理你的，快改名吧格式：所在地-称呼-行业-擅长技术[${lk.myNick}]！
+   welcomeMsg: 欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不理你的，快改名格式：${lk.cardRule}！
+   remindMsg: 小U发现您的群名片不合规，请修改一下吧，格式为：${lk.cardRule}！
+---
+spring:
+   profiles: test2
+lk:
+   groupName: 实力天团@天生闪耀
+   myNick: 上海-小U-x星球-问答
+   ingoreNickList: ${lk.myNick}
+   cardRule: 所在地-称呼-行业-擅长技术[${lk.myNick}]
+   welcomeMsg: 欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不理你的，快改名格式：所在地-称呼-行业-擅长技术[${lk.myNick}]！
    remindMsg: 小U发现您的群名片不合规，请修改一下吧，格式为：所在地-称呼-行业-擅长技术[${lk.myNick}]！
 ---
 spring:
-   profiles: dev
+   profiles: d7
 lk:
-   groupName: Dorado7爱好者
-   myNick: 上海-小U-外星人-问答
+   groupName: Dorado7
+   myNick: 上海-小U-x星球-问答
    cardRule: 所在地-称呼-行业-擅长技术[${lk.myNick}]
-   welcomeMsg: 欢迎入圈，请修改群名片，否则小U会生气的，小U生气不要紧，关键是群主可能也会很生气哦，那样事情就严重了，他会不理你的，快改名吧格式：所在地-称呼-行业-擅长技术[${lk.myNick}]！
-   remindMsg: 小U发现您的群名片不合规，请修改一下吧，格式为：所在地-称呼-行业-擅长技术[${lk.myNick}]！
+   welcomeMsg: 欢迎入圈，为加强沟通交流，请修改群名片，否则小U会不厌其烦的提示你的，如若一直不改当小U失去耐心时会请你出群的，谢谢配合，请快改名片格式：${lk.cardRule}！
+   remindMsg: 小U发现您的群名片不合规，请修改，格式为：${lk.cardRule}！

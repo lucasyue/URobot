@@ -107,7 +107,7 @@ public class UbEngine {
 							e.printStackTrace();
 						}
 						msg = null;
-					}
+					} 
 				}
 			}
 		}).start();
@@ -152,7 +152,7 @@ public class UbEngine {
 		if (content != null && content.contains("大家好，我是")) {
 			String name = content.substring(content.indexOf("大家好，我是") + 6, content.indexOf("。"));
 			String welcomeMsg1 = "@" + name + welcomeMsg;
-			System.out.println(">>>>>>>>>" + welcomeMsg1);
+			System.out.println(">>>>" + welcomeMsg1);
 			logger.info(welcomeMsg1);
 			RemindLogger.traceMessage(welcomeMsg1);
 			client.sendMessageToGroup(msg.getGroupId(), welcomeMsg1);
@@ -218,10 +218,10 @@ public class UbEngine {
 			String talkBack = card == null ? nick : card;
 			String talk = "@" + talkBack + "，";
 			if(back == null){
-				back = "我现在不想说话，请不要打扰我！";
+				back = "我现在还比较笨，我要去学习了，我现在不能再说话，请不要打扰我！";
 			}
 			if (count == 1) {
-				talk = "@" + talkBack + "，已经回复你了，";
+				talk = "@" + talkBack + "，已经回复你了，有空再聊啊。";
 			}
 			talk += back;
 			count++;
@@ -229,7 +229,7 @@ public class UbEngine {
 			client.sendMessageToGroup(msg.getGroupId(), talk);
 			TalkLogger.traceMessage(talk);
 		}
-		System.out.println(card + "," + nick + ">" + content + "," + msg.getUserId() + "," + uin);
+		System.out.println(">>talk>>"+card + "," + nick + ">" + content + "," + msg.getUserId() + "," + uin);
 	}
 
 	public boolean ifNeedRemindTimer(Long uin) {
