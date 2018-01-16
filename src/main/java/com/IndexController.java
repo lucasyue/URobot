@@ -23,9 +23,9 @@ public class IndexController {
 		try {
 			res.setCharacterEncoding("utf8");
 			res.setContentType("text/html");
-			String loginDiv = "<div id='loginDiv'><img id='loginImg' width='200' height='200' src='/urobot/service/lgp?no=1'></img><div style='text-align:center;width:200;'>扫码登录</div></div>"
+			String loginDiv = "<html><head><meta charset=utf8/></head><body><div id='loginDiv'><img id='loginImg' width='200' height='200' src='/urobot/service/lgp?no=1'></img><div style='text-align:center;width:200;'>扫码登录</div></div>"
 					+ "<div><a href='/urule/frame' style='text-decoration:none;'>设计交谈</a></div>"
-					+ getJob();
+					+ getJob() + "</body></html>";
 			res.getOutputStream().write(loginDiv.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();

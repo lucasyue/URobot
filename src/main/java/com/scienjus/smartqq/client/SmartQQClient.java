@@ -89,7 +89,11 @@ public class SmartQQClient implements Closeable {
     public SmartQQClient(final MessageCallback callback) {
         this.client = Client.pooled().maxPerRoute(5).maxTotal(10).build();
         this.session = client.session();
-        login();
+        boolean loginFlag = login();
+        while(!loginFlag){
+        	loginFlag = login();
+        }
+        SmartQQClient.LOGIN_FLAG = loginFlag;
         if (callback != null) {
             this.pollStarted = true;
             new Thread(new Runnable() {
@@ -118,17 +122,22 @@ public class SmartQQClient implements Closeable {
     /**
      * 登录
      */
-    private void login() {
-        getQRCode();
-        String url = verifyQRCode();
-        SmartQQClient.LOGIN_FLAG = true;
-        getPtwebqq(url);
-        getVfwebqq();
-        getUinAndPsessionid();
-        getFriendStatus(); //修复Api返回码[103]的问题
-        //登录成功欢迎语
-        UserInfo userInfo = getAccountInfo();
-        LOGGER.info(userInfo.getNick() + "，欢迎！");
+    private boolean login() {
+        try {
+			getQRCode();
+			String url = verifyQRCode();
+			getPtwebqq(url);
+			getVfwebqq();
+			getUinAndPsessionid();
+			getFriendStatus(); //修复Api返回码[103]的问题
+			//登录成功欢迎语
+			UserInfo userInfo = getAccountInfo();
+			LOGGER.info(userInfo.getNick() + "，欢迎！");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+        return true;
     }
 
     //登录流程1：获取二维码
@@ -271,7 +280,15 @@ public class SmartQQClient implements Closeable {
         }
     }
 
-    /**
+    public synchronized void stopPoll() {
+		this.pollStarted = false;
+	}
+
+	public synchronized void startPoll() {
+		this.pollStarted = true;
+	}
+
+	/**
      * 发送群消息
      *
      * @param groupId 群id

@@ -125,10 +125,13 @@ public class UbEngine {
 		if (watchedGroup == null) {
 			List<Group> gList = null;
 			try {
+				client.stopPoll();
 				gList = client.getGroupList();
 			} catch (Exception e) {
 				e.printStackTrace();
+				client.startPoll();
 			}
+			client.startPoll();
 			if (gList == null) {
 				return;
 			}
@@ -218,7 +221,7 @@ public class UbEngine {
 			String talkBack = card == null ? nick : card;
 			String talk = "@" + talkBack + "，";
 			if(back == null){
-				back = "我现在还比较笨，我要去学习了，我现在不能再说话，请不要打扰我！";
+				back = "我现在还比较笨，我去学习了，我现在不能再说话，请不要打扰我！";
 			}
 			if (count == 1) {
 				talk = "@" + talkBack + "，已经回复你了，有空再聊啊。";
