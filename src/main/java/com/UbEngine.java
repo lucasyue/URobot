@@ -44,6 +44,11 @@ public class UbEngine {
 	private String remindMsg = null;
 	@Value("${lk.ingoreNickList}")
 	private String ingoreNickList = null;
+	@Value("${lk.defaultBack1}")
+	private String defaultBack1 = null;
+	@Value("${lk.defaultBack2}")
+	private String defaultBack2 = null;
+	
 	private Set<String> ignoreUsers = new HashSet<String>();
 	private Group watchedGroup = null;
 	private int timeSpanRemind = 60 * 1000;//提醒改名的时间间隔
@@ -60,7 +65,8 @@ public class UbEngine {
 		}
 		// watchedGroupName = "实力天团@天生闪耀";
 		// 创建一个新对象时需要扫描二维码登录，并且传一个处理接收到消息的回调，如果你不需要接收消息，可以传null
-		final Queue<GroupMessage> msgQueue = new ConcurrentLinkedQueue<GroupMessage>();
+		final Queue<GroupMessage> msgQueue = new ConcurrentLinkedQueue<GroupMessage>();//接收消息队列
+		MyTimer timer = new MyTimer();//计时器
 		client = new SmartQQClient(new MessageCallback() {
 			@Override
 			public void onMessage(Message message) {
@@ -95,11 +101,7 @@ public class UbEngine {
 					GroupMessage msg = msgQueue.poll();
 					if (msg != null) {
 						try {
-							boolean send = checkAndSendWelcome(msg);
-							if (!send) {
-								refreshWatchedGroupUsers();
-								send = checkAndRemindRename(msg);
-							}
+							boolean send = checkAndRemindRename(msg);
 							if (!send) {
 								talk(msg);
 							}
@@ -107,10 +109,15 @@ public class UbEngine {
 							e.printStackTrace();
 						}
 						msg = null;
+						timer.restart();
 					} 
+					if(!timer.isTimeout()){//刷新用户列表，欢迎功能
+						refreshWatchedGroupUsers();
+					}
 				}
 			}
 		}).start();
+		
 		// for(int i=0;i<10;i++)
 		// client.sendMessageToGroup(gId2, "ai"+i+"...");
 		// 使用后调用close方法关闭，你也可以使用try-with-resource创建该对象并自动关闭
@@ -146,21 +153,27 @@ public class UbEngine {
 		GroupInfo gInfo = client.getGroupInfo(watchedGroup.getCode());
 		List<GroupUser> gUsers = gInfo.getUsers();
 		for (GroupUser gu : gUsers) {
+			if(!watchGroupUsers.containsKey(gu.getUin())){
+				//新增成员
+			}
 			watchGroupUsers.put(gu.getUin(), gu);
 		}
+		System.out.println("目前群总人数" + watchGroupUsers.size());
 	}
 
-	public boolean checkAndSendWelcome(GroupMessage msg) {
+	public void checkAndSendWelcome(GroupMessage msg) {
 		String content = msg.getContent();
-		if (content != null && content.contains("大家好，我是")) {
-			String name = content.substring(content.indexOf("大家好，我是") + 6, content.indexOf("。"));
-			String welcomeMsg1 = "@" + name + welcomeMsg;
-			System.out.println(">>>>" + welcomeMsg1);
-			logger.info(welcomeMsg1);
-			RemindLogger.traceMessage(welcomeMsg1);
-			client.sendMessageToGroup(msg.getGroupId(), welcomeMsg1);
-			return true;
-		}
+		GroupUser gUser = watchGroupUsers.get(msg.getUserId());
+		String welcomeMsg1 = "@" + gUser.getNick() + welcomeMsg;
+		String name = content.substring(content.indexOf("大家好，我是") + 6, content.indexOf("。"));
+		System.out.println(">>>>" + welcomeMsg1);
+		logger.info(welcomeMsg1);
+		RemindLogger.traceMessage(welcomeMsg1);
+		client.sendMessageToGroup(msg.getGroupId(), welcomeMsg1);
+	}
+    private Set<Long> welcomeUser = new HashSet<Long>();
+	private boolean firstJoin(GroupUser gUser) {
+		
 		return false;
 	}
 
@@ -221,10 +234,10 @@ public class UbEngine {
 			String talkBack = card == null ? nick : card;
 			String talk = "@" + talkBack + "，";
 			if(back == null){
-				back = "我现在还比较笨，我去学习了，我现在不能再说话，请不要打扰我！";
+				back = defaultBack1;
 			}
 			if (count == 1) {
-				talk = "@" + talkBack + "，已经回复你了，有空再聊啊。";
+				talk = defaultBack2;
 			}
 			talk += back;
 			count++;
