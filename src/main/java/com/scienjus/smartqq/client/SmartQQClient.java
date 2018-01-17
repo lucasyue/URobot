@@ -110,8 +110,9 @@ public class SmartQQClient implements Closeable {
                             if (!(e.getCause() instanceof SocketTimeoutException)) {
                                 LOGGER.error(e.getMessage());
                             }
+                            e.printStackTrace();
                         } catch (Exception e) {
-                            LOGGER.error(e.getMessage());
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -265,7 +266,13 @@ public class SmartQQClient implements Closeable {
         r.put("psessionid", psessionid);
         r.put("key", "");
 
-        Response<String> response = post(ApiURL.POLL_MESSAGE, r);
+        Response<String> response = null;
+		try {
+			response = post(ApiURL.POLL_MESSAGE, r);
+		} catch (Exception e) {
+			System.out.println("发送消息出错");
+			throw e;
+		}
         JSONArray array = getJsonArrayResult(response);
         for (int i = 0; array != null && i < array.size(); i++) {
             JSONObject message = array.getJSONObject(i);

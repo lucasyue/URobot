@@ -7,7 +7,7 @@ public class MyTimer {
 	private int secondsTimeout;
 
 	public MyTimer() {
-		this.secondsTimeout = 30;
+		this.secondsTimeout = 180;//3
 		this.begin = new Date();
 	}
 
@@ -19,7 +19,7 @@ public class MyTimer {
 	public boolean isTimeout() {
 		Date now = new Date();
 		long times = now.getTime() - begin.getTime();
-		if (times * 1000 > secondsTimeout) {
+		if (times > secondsTimeout * 1000) {
 			begin = new Date();
 			return true;
 		}

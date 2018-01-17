@@ -51,6 +51,7 @@ public class UbEngine {
 	
 	private Set<String> ignoreUsers = new HashSet<String>();
 	private Group watchedGroup = null;
+	private boolean hasGetWatchedGroupUsers = false;
 	private int timeSpanRemind = 60 * 1000;//提醒改名的时间间隔
 	private Map<Long, GroupUser> watchGroupUsers = new HashMap<Long, GroupUser>();
 	static Map<String, Integer> talkMap = new ConcurrentHashMap<String, Integer>();
@@ -111,7 +112,7 @@ public class UbEngine {
 						msg = null;
 						timer.restart();
 					} 
-					if(!timer.isTimeout()){//刷新用户列表，欢迎功能
+					if(timer.isTimeout()){//刷新用户列表，欢迎功能
 						refreshWatchedGroupUsers();
 					}
 				}
@@ -150,13 +151,18 @@ public class UbEngine {
 				}
 			}
 		}
-		GroupInfo gInfo = client.getGroupInfo(watchedGroup.getCode());
-		List<GroupUser> gUsers = gInfo.getUsers();
-		for (GroupUser gu : gUsers) {
-			if(ifSendWelcome(gu)){
-				sendWelcome(gu);
+		try {
+			GroupInfo gInfo = client.getGroupInfo(watchedGroup.getCode());
+			List<GroupUser> gUsers = gInfo.getUsers();
+			for (GroupUser gu : gUsers) {
+				if(ifSendWelcome(gu)){
+					sendWelcome(gu);
+				}
+				watchGroupUsers.put(gu.getUin(), gu);
 			}
-			watchGroupUsers.put(gu.getUin(), gu);
+			hasGetWatchedGroupUsers = true;
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		System.out.println("目前群总人数" + watchGroupUsers.size());
 	}
@@ -172,6 +178,9 @@ public class UbEngine {
     private Set<Long> hasSendWelcomeUsers = new HashSet<Long>();
     
 	private boolean ifSendWelcome(GroupUser gUser) {
+		if(!hasGetWatchedGroupUsers){
+			return false;
+		}
 		if(watchGroupUsers.containsKey(gUser.getUin())){//非新增成员
 			return false;
 		} else if(hasSendWelcomeUsers.contains(gUser.getUin())){
