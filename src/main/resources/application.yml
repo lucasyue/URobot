@@ -10,7 +10,7 @@ lk:
    myNick: 上海-锐道信息-小U
    ingoreNickList: 上海-锐道信息-Jacky,Jacky,上海-锐道信息-高杰
    cardRule: 所在地-公司名-呢称[${lk.myNick}]
-   welcomeMsg: 欢迎入圈，请先阅读群公告并修改群名片，群名片格式为：${lk.cardRule}！
+   welcomeMsg: 欢迎入圈，请先阅读群公告，并修改下群名片，群名片格式为：${lk.cardRule}，也可以@${lk.myNick}了解项目基本信息！
    remindMsg: 小U发现您的群名片不合规，请修改一下吧，格式为：${lk.cardRule}！
 urule:
    repository:

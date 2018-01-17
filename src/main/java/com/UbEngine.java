@@ -153,28 +153,33 @@ public class UbEngine {
 		GroupInfo gInfo = client.getGroupInfo(watchedGroup.getCode());
 		List<GroupUser> gUsers = gInfo.getUsers();
 		for (GroupUser gu : gUsers) {
-			if(!watchGroupUsers.containsKey(gu.getUin())){
-				//新增成员
+			if(ifSendWelcome(gu)){
+				sendWelcome(gu);
 			}
 			watchGroupUsers.put(gu.getUin(), gu);
 		}
 		System.out.println("目前群总人数" + watchGroupUsers.size());
 	}
 
-	public void checkAndSendWelcome(GroupMessage msg) {
-		String content = msg.getContent();
-		GroupUser gUser = watchGroupUsers.get(msg.getUserId());
+	public void sendWelcome(GroupUser gUser) {
 		String welcomeMsg1 = "@" + gUser.getNick() + welcomeMsg;
-		String name = content.substring(content.indexOf("大家好，我是") + 6, content.indexOf("。"));
 		System.out.println(">>>>" + welcomeMsg1);
 		logger.info(welcomeMsg1);
 		RemindLogger.traceMessage(welcomeMsg1);
-		client.sendMessageToGroup(msg.getGroupId(), welcomeMsg1);
+		client.sendMessageToGroup(watchedGroup.getId(), welcomeMsg1);
 	}
-    private Set<Long> welcomeUser = new HashSet<Long>();
-	private boolean firstJoin(GroupUser gUser) {
-		
-		return false;
+	
+    private Set<Long> hasSendWelcomeUsers = new HashSet<Long>();
+    
+	private boolean ifSendWelcome(GroupUser gUser) {
+		if(watchGroupUsers.containsKey(gUser.getUin())){//非新增成员
+			return false;
+		} else if(hasSendWelcomeUsers.contains(gUser.getUin())){
+			return false;
+		} else {
+			hasSendWelcomeUsers.add(gUser.getUin());
+			return true;
+		}
 	}
 
 	public boolean checkAndRemindRename(GroupMessage msg) {
