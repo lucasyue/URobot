@@ -84,6 +84,7 @@ public class SmartQQClient implements Closeable {
 
     //线程开关
     private volatile boolean pollStarted;
+    private volatile boolean pollPaused;
 
 
     public SmartQQClient(final MessageCallback callback) {
@@ -102,6 +103,9 @@ public class SmartQQClient implements Closeable {
                     while (true) {
                         if (!pollStarted) {
                             return;
+                        }
+                        if(pollPaused){
+                        	continue;
                         }
                         try {
                             pollMessage(callback);
@@ -287,12 +291,12 @@ public class SmartQQClient implements Closeable {
         }
     }
 
-    public synchronized void stopPoll() {
-		this.pollStarted = false;
+    public synchronized void pausePoll() {
+		this.pollPaused = true;
 	}
 
 	public synchronized void startPoll() {
-		this.pollStarted = true;
+		this.pollPaused = false;
 	}
 
 	/**

@@ -133,7 +133,7 @@ public class UbEngine {
 		if (watchedGroup == null) {
 			List<Group> gList = null;
 			try {
-				client.stopPoll();
+				client.pausePoll();
 				gList = client.getGroupList();
 			} catch (Exception e) {
 				e.printStackTrace();

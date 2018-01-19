@@ -46,9 +46,14 @@ public class ContainAssertor implements Assertor {
 				String rightStr=right.toString();
 				if(rightStr.contains(",")){
 					String[] rightList=rightStr.split(",");
+					boolean rs = false;
 					for(String r : rightList){
-						return leftStr.contains(r);
+						rs= leftStr.contains(r);
+						if(rs){
+							break;
+						}
 					}
+					return rs;
 				} else {
 					return leftStr.contains(rightStr);
 				}
