@@ -270,13 +270,7 @@ public class SmartQQClient implements Closeable {
         r.put("psessionid", psessionid);
         r.put("key", "");
 
-        Response<String> response = null;
-		try {
-			response = post(ApiURL.POLL_MESSAGE, r);
-		} catch (Exception e) {
-			System.out.println("发送消息出错");
-			throw e;
-		}
+        Response<String> response = post(ApiURL.POLL_MESSAGE, r);
         JSONArray array = getJsonArrayResult(response);
         for (int i = 0; array != null && i < array.size(); i++) {
             JSONObject message = array.getJSONObject(i);
@@ -664,12 +658,22 @@ public class SmartQQClient implements Closeable {
 
     //发送post请求
     private Response<String> post(ApiURL url, JSONObject r) {
-        return session.post(url.getUrl())
-                .addHeader("User-Agent", ApiURL.USER_AGENT)
-                .addHeader("Referer", url.getReferer())
-                .addHeader("Origin", url.getOrigin())
-                .addForm("r", r.toJSONString())
-                .text(StandardCharsets.UTF_8);
+        try {
+			return session.post(url.getUrl())
+			        .addHeader("User-Agent", ApiURL.USER_AGENT)
+			        .addHeader("Referer", url.getReferer())
+			        .addHeader("Origin", url.getOrigin())
+			        .addForm("r", r.toJSONString())
+			        .text(StandardCharsets.UTF_8);
+		} catch (Exception e) {
+			if (e instanceof SocketTimeoutException || e.getCause() instanceof SocketTimeoutException) {
+				System.out.println("接收消息出错-SocketTimeoutException");
+				LOGGER.error("接收消息出错-SocketTimeoutException");
+			} else {
+				throw e;
+			}
+		}
+		return null;
     }
 
     //发送post请求，失败时重试

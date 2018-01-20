@@ -1,5 +1,6 @@
 package com;
 
+import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +28,7 @@ import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.GroupUser;
 import com.scienjus.smartqq.model.Message;
 import com.urule.URuleUtil;
+
 @Component
 public class UbEngine {
 	private Logger logger = LoggerFactory.getLogger(UbEngine.class);
@@ -48,26 +50,26 @@ public class UbEngine {
 	private String defaultBack1 = null;
 	@Value("${lk.defaultBack2}")
 	private String defaultBack2 = null;
-	
+
 	private Set<String> ignoreUsers = new HashSet<String>();
 	private Group watchedGroup = null;
 	private boolean hasGetWatchedGroupUsers = false;
-	private int timeSpanRemind = 60 * 1000;//提醒改名的时间间隔
+	private int timeSpanRemind = 60 * 1000;// 提醒改名的时间间隔
 	private Map<Long, GroupUser> watchGroupUsers = new HashMap<Long, GroupUser>();
 	static Map<String, Integer> talkMap = new ConcurrentHashMap<String, Integer>();
 
 	public void start(String[] args) {
-		System.out.println(watchedGroupName+" "+cardRule);
-		if(ingoreNickList != null){
+		System.out.println(watchedGroupName + " " + cardRule);
+		if (ingoreNickList != null) {
 			String[] list = ingoreNickList.split(",");
-			for(String n : list){
+			for (String n : list) {
 				ignoreUsers.add(n);
 			}
 		}
 		// watchedGroupName = "实力天团@天生闪耀";
 		// 创建一个新对象时需要扫描二维码登录，并且传一个处理接收到消息的回调，如果你不需要接收消息，可以传null
-		final Queue<GroupMessage> msgQueue = new ConcurrentLinkedQueue<GroupMessage>();//接收消息队列
-		MyTimer timer = new MyTimer();//计时器
+		final Queue<GroupMessage> msgQueue = new ConcurrentLinkedQueue<GroupMessage>();// 接收消息队列
+		MyTimer timer = new MyTimer();// 计时器
 		client = new SmartQQClient(new MessageCallback() {
 			@Override
 			public void onMessage(Message message) {
@@ -107,26 +109,23 @@ public class UbEngine {
 								talk(msg);
 							}
 						} catch (Exception e) {
-							e.printStackTrace();
+							if (e instanceof SocketTimeoutException || e.getCause() instanceof SocketTimeoutException) {
+								logger.error("SocketTimeoutException");
+							} else {
+								logger.error("error-checkAndRemindRename", e);
+							}
 						}
 						msg = null;
 						timer.restart();
-					} 
-					if(timer.isTimeout()){//刷新用户列表，欢迎功能
+					}
+					if (timer.isTimeout()) {// 刷新用户列表，欢迎功能
 						refreshWatchedGroupUsers();
 					}
 				}
 			}
 		}).start();
-		
-		// for(int i=0;i<10;i++)
-		// client.sendMessageToGroup(gId2, "ai"+i+"...");
 		// 使用后调用close方法关闭，你也可以使用try-with-resource创建该对象并自动关闭
-		// try {
 		// client.close();
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
 	}
 
 	private void refreshWatchedGroupUsers() {
@@ -136,8 +135,13 @@ public class UbEngine {
 				client.pausePoll();
 				gList = client.getGroupList();
 			} catch (Exception e) {
-				e.printStackTrace();
 				client.startPoll();
+				if (e instanceof SocketTimeoutException || e.getCause() instanceof SocketTimeoutException) {
+					logger.error("SocketTimeoutException");
+				} else {
+					logger.error("error-getGroupList", e);
+				}
+				return;
 			}
 			client.startPoll();
 			if (gList == null) {
@@ -151,18 +155,25 @@ public class UbEngine {
 				}
 			}
 		}
+		if (watchedGroup == null) {
+			return;
+		}
 		try {
 			GroupInfo gInfo = client.getGroupInfo(watchedGroup.getCode());
 			List<GroupUser> gUsers = gInfo.getUsers();
 			for (GroupUser gu : gUsers) {
-				if(ifSendWelcome(gu)){
+				if (ifSendWelcome(gu)) {
 					sendWelcome(gu);
 				}
 				watchGroupUsers.put(gu.getUin(), gu);
 			}
 			hasGetWatchedGroupUsers = true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			if (e instanceof SocketTimeoutException || e.getCause() instanceof SocketTimeoutException) {
+				logger.error("SocketTimeoutException");
+			} else {
+				logger.error("error-getGroupInfo", e);
+			}
 		}
 		System.out.println("目前群总人数" + watchGroupUsers.size());
 	}
@@ -174,16 +185,16 @@ public class UbEngine {
 		RemindLogger.traceMessage(welcomeMsg1);
 		client.sendMessageToGroup(watchedGroup.getId(), welcomeMsg1);
 	}
-	
-    private Set<Long> hasSendWelcomeUsers = new HashSet<Long>();
-    
+
+	private Set<Long> hasSendWelcomeUsers = new HashSet<Long>();
+
 	private boolean ifSendWelcome(GroupUser gUser) {
-		if(!hasGetWatchedGroupUsers){
+		if (!hasGetWatchedGroupUsers) {
 			return false;
 		}
-		if(watchGroupUsers.containsKey(gUser.getUin())){//非新增成员
+		if (watchGroupUsers.containsKey(gUser.getUin())) {// 非新增成员
 			return false;
-		} else if(hasSendWelcomeUsers.contains(gUser.getUin())){
+		} else if (hasSendWelcomeUsers.contains(gUser.getUin())) {
 			return false;
 		} else {
 			hasSendWelcomeUsers.add(gUser.getUin());
@@ -218,7 +229,7 @@ public class UbEngine {
 			}
 		}
 		if (!right) {
-			String remindMsg1 = "@" + (card == null ? nick : card) + "："+remindMsg;
+			String remindMsg1 = "@" + (card == null ? nick : card) + "：" + remindMsg;
 			client.sendMessageToGroup(msg.getGroupId(), remindMsg1);
 			RemindLogger.traceMessage(remindMsg1);
 			remindTimer.put(gUser.getUin(), new Date());
@@ -234,20 +245,20 @@ public class UbEngine {
 		String nick = gUser.getNick();
 		String card = gUser.getCard();
 
-		if (content.contains("@"+myNick)) {
-			Map<String,Object> params = new HashMap<String, Object>();
-			
+		if (content.contains("@" + myNick)) {
+			Map<String, Object> params = new HashMap<String, Object>();
+
 			Integer count = talkMap.get(nick);
 			if (count == null) {
-			    count = 0;
+				count = 0;
 			}
 			params.put("content", content);
 			params.put("count", count);
-			Map<String,Object> rs = URuleUtil.getAnswer(params);
+			Map<String, Object> rs = URuleUtil.getAnswer(params);
 			String back = (String) rs.get("back");
 			String talkBack = card == null ? nick : card;
 			String talk = "@" + talkBack + "，";
-			if(back == null){
+			if (back == null) {
 				back = defaultBack1;
 			}
 			if (count == 1) {
@@ -259,7 +270,7 @@ public class UbEngine {
 			client.sendMessageToGroup(msg.getGroupId(), talk);
 			TalkLogger.traceMessage(talk);
 		}
-		System.out.println(">>talk>>"+card + "," + nick + ">" + content + "," + msg.getUserId() + "," + uin);
+		System.out.println(">>talk>>" + card + "," + nick + ">" + content + "," + msg.getUserId() + "," + uin);
 	}
 
 	public boolean ifNeedRemindTimer(Long uin) {
