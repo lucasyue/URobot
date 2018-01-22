@@ -7,7 +7,7 @@ public class MyTimer {
 	private int secondsTimeout;
 
 	public MyTimer() {
-		this.secondsTimeout = 180;//3
+		this.secondsTimeout = 60;//3
 		this.begin = new Date();
 	}
 

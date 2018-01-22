@@ -22,6 +22,8 @@ public class GroupUser {
     private String city;
 
     private String card;
+    
+    private String fullCard;
 
     private int clientType;
 
@@ -87,7 +89,15 @@ public class GroupUser {
         this.card = card;
     }
 
-    public int getClientType() {
+    public String getFullCard() {
+		return fullCard;
+	}
+
+	public void setFullCard(String fullCard) {
+		this.fullCard = fullCard;
+	}
+
+	public int getClientType() {
         return clientType;
     }
 

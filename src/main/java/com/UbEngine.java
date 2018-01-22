@@ -229,6 +229,7 @@ public class UbEngine {
 			}
 		}
 		if (!right) {
+			//should get nick and check again
 			String remindMsg1 = "@" + (card == null ? nick : card) + "：" + remindMsg;
 			client.sendMessageToGroup(msg.getGroupId(), remindMsg1);
 			RemindLogger.traceMessage(remindMsg1);

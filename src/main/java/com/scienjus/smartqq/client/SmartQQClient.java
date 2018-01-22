@@ -113,10 +113,10 @@ public class SmartQQClient implements Closeable {
                             //忽略SocketTimeoutException
                             if (!(e.getCause() instanceof SocketTimeoutException)) {
                                 LOGGER.error(e.getMessage());
+                            } else {
                             }
-                            e.printStackTrace();
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            LOGGER.error(e.getMessage());
                         }
                     }
                 }
@@ -666,14 +666,8 @@ public class SmartQQClient implements Closeable {
 			        .addForm("r", r.toJSONString())
 			        .text(StandardCharsets.UTF_8);
 		} catch (Exception e) {
-			if (e instanceof SocketTimeoutException || e.getCause() instanceof SocketTimeoutException) {
-				System.out.println("接收消息出错-SocketTimeoutException");
-				LOGGER.error("接收消息出错-SocketTimeoutException");
-			} else {
-				throw e;
-			}
+			throw e;
 		}
-		return null;
     }
 
     //发送post请求，失败时重试
